@@ -9,6 +9,7 @@ https://t.me/toncontests/36
 ### Testnet
 - create wallet on testnet: https://wallet.ton.org/?testnet=true
 - receive testnet coins: @testgiver_ton_bot in Telegram (https://ton.app/utilities/faucet)
+- Explorer: https://testnet.tonscan.org/
 
 
 ### HTTP API
