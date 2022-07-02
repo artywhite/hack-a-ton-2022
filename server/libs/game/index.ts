@@ -1,4 +1,4 @@
-import { APP_EVENTS } from "../../../my-web-app/src/types";
+import { APP_EVENTS, IMessage } from "../../../my-web-app/src/types";
 import { Challenge } from "../challenge";
 import { BrowserClient } from "../client";
 import { ClientState } from "../client/types";
@@ -9,8 +9,13 @@ interface IGameStatePoint {
     playerTwoPoint: number;
 }
 
+const ROUND_LENGTH = 60 * 1000;
+
 export class Game {
     private status: GameState = GameState.WaitingStart;
+
+    private timer?: NodeJS.Timeout;
+    private startTime = 0;
 
     private gameState: IGameStatePoint = {
         playerOnePoint: 0,
@@ -38,13 +43,51 @@ export class Game {
         );
     }
 
-    public start() {
-        this.playerOne.send({
-            eventName: APP_EVENTS.ROUND_START,
-            payload: {},
-        });
+    private sendToAllPlayer(message: IMessage) {
+        this.playerOne.send(message);
+        this.playerTwo.send(message);
+    }
 
-        this.playerTwo.send({
+    public end() {
+        if (this.status !== GameState.Ended) {
+            clearInterval(this.timer);
+
+            this.status = GameState.Ended;
+            this.sendToAllPlayer({
+                eventName: APP_EVENTS.ROUND_END,
+                payload: {},
+            });
+        }
+    }
+
+    private startTimerInterval() {
+        this.startTime = Date.now();
+
+        clearInterval(this.timer);
+        this.timer = setInterval(() => {
+            const dt = this.startTime + ROUND_LENGTH - Date.now();
+
+            if (dt > 0) {
+                this.sendToAllPlayer({
+                    eventName: APP_EVENTS.ROUND_TIMER,
+                    payload: {
+                        timeLeft: dt,
+                    },
+                });
+            } else {
+                this.end();
+            }
+        }, 1000);
+    }
+
+    public start() {
+        if (this.status === GameState.Active) {
+            return;
+        }
+
+        this.startTimerInterval();
+
+        this.sendToAllPlayer({
             eventName: APP_EVENTS.ROUND_START,
             payload: {},
         });

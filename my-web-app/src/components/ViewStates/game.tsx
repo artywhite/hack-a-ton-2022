@@ -33,7 +33,13 @@ interface IGameResult {
     partnerPoints: number;
 }
 
+interface ITimeLeft {
+    timeLeft?: number;
+}
+
 function Game() {
+    const [timeLeft, setTimeLeft] = useState<number>();
+
     const [gameState, setGameState] = useState<IGameResult>();
     const [challenges, setChallenges] = useState<IChallengePayload[]>([]);
 
@@ -67,14 +73,20 @@ function Game() {
             });
         };
 
+        const onTimerLeft = (payload: ITimeLeft) => {
+            setTimeLeft(payload.timeLeft);
+        };
+
         MyWebSocket.subscribe(APP_EVENTS.CHALLENGE_START, onChallengeStart);
         MyWebSocket.subscribe(APP_EVENTS.CHALLENGE_END, onChallengeEnd);
         MyWebSocket.subscribe(APP_EVENTS.GAME_STATE_UPDATE, onGameStateUpdate);
+        MyWebSocket.subscribe(APP_EVENTS.ROUND_TIMER, onTimerLeft);
 
         return () => {
             MyWebSocket.unsubscribe(APP_EVENTS.CHALLENGE_START, onChallengeStart);
             MyWebSocket.unsubscribe(APP_EVENTS.CHALLENGE_END, onChallengeEnd);
             MyWebSocket.unsubscribe(APP_EVENTS.GAME_STATE_UPDATE, onGameStateUpdate);
+            MyWebSocket.unsubscribe(APP_EVENTS.ROUND_TIMER, onTimerLeft);
         };
     }, []);
 
@@ -87,6 +99,8 @@ function Game() {
     return (
         <div>
             <h1>game started!</h1>
+
+            {timeLeft && <h4>Time: {Math.floor(timeLeft / 1000)}</h4>}
 
             {gameState && (
                 <h4>

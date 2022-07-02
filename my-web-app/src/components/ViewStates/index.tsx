@@ -99,7 +99,6 @@ function ViewStateManager() {
             return () => {
                 MyWebSocket.unsubscribe(SubscriptionType.CONNECT, onConnected);
                 MyWebSocket.unsubscribe(SubscriptionType.DISCONNECT, onDisconnected);
-                MyWebSocket.unsubscribe(APP_EVENTS.STATE_SYNC, onConnected);
             };
         }
     }, [wallet?.walletAddress]);

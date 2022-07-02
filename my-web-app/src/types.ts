@@ -12,6 +12,7 @@ export enum APP_EVENTS {
     CHALLENGE_START = "CHALLENGE_START",
     PLAYER_INPUT = "PLAYER_INPUT",
     CHALLENGE_END = "CHALLENGE_END",
+    ROUND_TIMER = "ROUND_TIMER",
 
     // Получение актуального состояния игрока после реконекта по сокетам (своего рода - синхронизация)
     STATE_SYNC = "STATE_SYNC",
