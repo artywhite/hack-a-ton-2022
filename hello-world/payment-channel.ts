@@ -261,3 +261,5 @@ const init = async () => {
 }
 
 init();
+
+export { };
