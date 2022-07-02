@@ -13,6 +13,9 @@ export enum APP_EVENTS {
     PLAYER_INPUT = "PLAYER_INPUT",
     CHALLENGE_END = "CHALLENGE_END",
 
+    // Получение актуального состояния игрока после реконекта по сокетам (своего рода - синхронизация)
+    STATE_SYNC = "STATE_SYNC",
+
     // Если изменилась состояние игры (очки у игрока и его партнера)
     GAME_STATE_UPDATE = "GAME_STATE_UPDATE",
 

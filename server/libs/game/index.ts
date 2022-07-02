@@ -59,6 +59,24 @@ export class Game {
         player.setChallenge(new Challenge());
     }
 
+    public sendState() {
+        this.playerOne.send({
+            eventName: APP_EVENTS.GAME_STATE_UPDATE,
+            payload: {
+                ...this.gameState,
+                currentPlayer: 1,
+            },
+        });
+
+        this.playerTwo.send({
+            eventName: APP_EVENTS.GAME_STATE_UPDATE,
+            payload: {
+                ...this.gameState,
+                currentPlayer: 2,
+            },
+        });
+    }
+
     public playerAnswer(player: BrowserClient, asnwer: number) {
         const result = player.challengeEnd(asnwer);
 
@@ -74,24 +92,9 @@ export class Game {
                     playerTwoPoint: this.gameState.playerTwoPoint + 1,
                 };
             }
-
-            this.playerOne.send({
-                eventName: APP_EVENTS.GAME_STATE_UPDATE,
-                payload: {
-                    ...this.gameState,
-                    currentPlayer: 1,
-                },
-            });
-
-            this.playerTwo.send({
-                eventName: APP_EVENTS.GAME_STATE_UPDATE,
-                payload: {
-                    ...this.gameState,
-                    currentPlayer: 2,
-                },
-            });
         }
 
+        this.sendState();
         this.startChallenge(player);
     }
 }

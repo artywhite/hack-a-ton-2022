@@ -52,6 +52,15 @@ export class BrowserClient {
         }
     }
 
+    public sendState() {
+        this.send({
+            eventName: APP_EVENTS.STATE_SYNC,
+            payload: {
+                status: this.state,
+            },
+        });
+    }
+
     public getGame() {
         return this.game;
     }
