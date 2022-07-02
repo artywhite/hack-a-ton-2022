@@ -1,11 +1,18 @@
 import { getId } from "../../utils/helpers";
 
+export enum ChallengeType {
+    InProgress = 1,
+    Right,
+    Wrong,
+}
+
 export class Challenge {
     private readonly id: string = getId();
 
     private readonly exampleString: string = "";
     private readonly rightAnswer: number;
-    private asnwers: number[] = [];
+    private answers: number[] = [];
+    private type: ChallengeType = ChallengeType.InProgress;
 
     public constructor() {
         const operandA = getRandomNumber();
@@ -18,15 +25,19 @@ export class Challenge {
 
         for (let i = 0; i < 4; i++) {
             if (rightIndex === i) {
-                this.asnwers.push(this.rightAnswer);
+                this.answers.push(this.rightAnswer);
             } else {
-                this.asnwers.push(getRandomNumber(200));
+                this.answers.push(getRandomNumber(200));
             }
         }
     }
 
     public check(value: number) {
-        return value === this.rightAnswer;
+        const isRight = value === this.rightAnswer;
+
+        this.type = isRight ? ChallengeType.Right : ChallengeType.Wrong;
+
+        return isRight;
     }
 
     public getId() {
@@ -37,7 +48,8 @@ export class Challenge {
         return {
             id: this.id,
             exampleString: this.exampleString,
-            asnwers: this.asnwers,
+            answers: this.answers,
+            type: this.type,
         };
     }
 }

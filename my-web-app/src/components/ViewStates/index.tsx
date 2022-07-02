@@ -3,7 +3,7 @@ import { useWallet } from "../../react-contexts/wallet-context";
 import { TonWebUtils } from "../../ton/common";
 import { APP_EVENTS } from "../../types";
 import MyWebSocket, { SubscriptionType } from "../../utils/ws";
-import Game from "./game";
+import Game, { IChallengePayload, IGameState } from "./game";
 import "./index.css";
 
 import TopUpPlayingWallet from "./topUpPlayingWallet";
@@ -34,7 +34,7 @@ interface IClientStateSync {
     challenges: Array<{
         id: string;
         exampleString: string;
-        asnwers?: number[];
+        answers: number[];
         isActive?: boolean;
     }>;
     game?: {
@@ -47,6 +47,8 @@ interface IClientStateSync {
 function ViewStateManager() {
     const { balance, wallet } = useWallet();
     const [viewState, setViewState] = useState(ViewStates.LOADING);
+    const [gameState, setGameState] = useState<IGameState>();
+    const [challenges, setChallenges] = useState<IChallengePayload[]>([]);
     const [isWsConnected, setWsConnected] = useState(false);
 
     let ViewStateComponent: ReactNode = <></>;
@@ -67,13 +69,18 @@ function ViewStateManager() {
             setViewState(ViewStates.GAME);
         };
 
-        const stateSync = (payload: IClientStateSync) => {
+        const onStateSync = (payload: IClientStateSync) => {
             console.log("STATE_SYNC", payload);
+            const { state, game, challenges = [] } = payload;
 
-            // Тут надо обработать восстановление состояния
+            if (state === ClientState.InGame) {
+                setViewState(ViewStates.GAME);
+                setGameState(game);
+                setChallenges(challenges.reverse());
+            }
         };
 
-        MyWebSocket.subscribe(APP_EVENTS.STATE_SYNC, stateSync);
+        MyWebSocket.subscribe(APP_EVENTS.STATE_SYNC, onStateSync);
         MyWebSocket.subscribe(APP_EVENTS.ROUND_PREPARE, onRoundPrepare);
         MyWebSocket.subscribe(APP_EVENTS.ROUND_START, onRoundStart);
 
@@ -104,7 +111,7 @@ function ViewStateManager() {
     }, [wallet?.walletAddress]);
 
     useEffect(() => {
-        if (balance && balance !== "0" && isWsConnected) {
+        if (viewState === ViewStates.TOP_UP_PLAYING_WALLET && balance && balance !== "0" && isWsConnected) {
             setViewState(ViewStates.WAITING_FOR_PLAYER);
 
             MyWebSocket.send(APP_EVENTS.WAITING_FOR_PLAYER, {
@@ -132,7 +139,7 @@ function ViewStateManager() {
         }
 
         case ViewStates.GAME: {
-            ViewStateComponent = <Game />;
+            ViewStateComponent = <Game game={gameState} challenges={challenges} />;
             break;
         }
     }

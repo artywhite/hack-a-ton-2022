@@ -19,7 +19,7 @@ export const ChallengeRow = React.memo(({ challenge, onAnswer }: IProps) => {
             <h4>{challenge.exampleString}</h4>
 
             {!isDone &&
-                challenge.asnwers.map((answer, i) => (
+                challenge.answers.map((answer, i) => (
                     <button key={i} onClick={() => onAnswer(answer)}>
                         {answer}
                     </button>

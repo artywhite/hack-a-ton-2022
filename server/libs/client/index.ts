@@ -57,7 +57,7 @@ export class BrowserClient {
         this.send({
             eventName: APP_EVENTS.STATE_SYNC,
             payload: {
-                status: this.state,
+                state: this.state,
                 challenges: this.challenges.map((challenge) => ({
                     ...challenge,
                     isActive: challenge === this.activeChallenge,

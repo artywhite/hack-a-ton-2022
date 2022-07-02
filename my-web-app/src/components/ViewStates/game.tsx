@@ -13,7 +13,7 @@ export enum ChallengeType {
 export interface IChallengePayload {
     id: string;
     exampleString: string;
-    asnwers: number[];
+    answers: number[];
     type?: ChallengeType;
 }
 
@@ -22,26 +22,27 @@ export interface IChallengeEndResult {
     isRight: boolean;
 }
 
-interface IGameState {
+export interface IGameState {
     playerOnePoint: number;
     playerTwoPoint: number;
     currentPlayer: 1 | 2;
-}
-
-interface IGameResult {
-    myPoints: number;
-    partnerPoints: number;
 }
 
 interface ITimeLeft {
     timeLeft?: number;
 }
 
-function Game() {
+interface IGameProps {
+    challenges: IChallengePayload[];
+    game?: IGameState;
+}
+
+function Game(props: IGameProps) {
+    const { challenges: initChallenges = [], game: initGameState } = props;
     const [timeLeft, setTimeLeft] = useState<number>();
 
-    const [gameState, setGameState] = useState<IGameResult>();
-    const [challenges, setChallenges] = useState<IChallengePayload[]>([]);
+    const [gameState, setGameState] = useState<IGameState | undefined>(initGameState);
+    const [challenges, setChallenges] = useState<IChallengePayload[]>(initChallenges);
 
     useEffect(() => {
         const onChallengeStart = (payload: IChallengePayload) => {
@@ -55,22 +56,16 @@ function Game() {
                 current.map((challenge) =>
                     challenge.id === payload.id
                         ? {
-                              ...challenge,
-                              type: isPlayerAnswerCorrect ? ChallengeType.Right : ChallengeType.Wrong,
-                          }
+                            ...challenge,
+                            type: isPlayerAnswerCorrect ? ChallengeType.Right : ChallengeType.Wrong,
+                        }
                         : challenge,
                 ),
             );
         };
 
         const onGameStateUpdate = (payload: IGameState) => {
-            const myPoints = payload.currentPlayer === 1 ? payload.playerOnePoint : payload.playerTwoPoint;
-            const partnerPoints = payload.currentPlayer === 1 ? payload.playerTwoPoint : payload.playerOnePoint;
-
-            setGameState({
-                myPoints,
-                partnerPoints,
-            });
+            setGameState(payload);
         };
 
         const onTimerLeft = (payload: ITimeLeft) => {
@@ -96,6 +91,9 @@ function Game() {
         });
     }, []);
 
+    const myPoints = gameState?.currentPlayer === 1 ? gameState.playerOnePoint : gameState?.playerTwoPoint;
+    const partnerPoints = gameState?.currentPlayer === 1 ? gameState.playerTwoPoint : gameState?.playerOnePoint;
+
     return (
         <div>
             <h1>game started!</h1>
@@ -106,10 +104,10 @@ function Game() {
                 <h4>
                     GAME RESULT:
                     <p>
-                        My game points: <b>{gameState.myPoints}</b>
+                        My game points: <b>{myPoints}</b>
                     </p>
                     <p>
-                        Opponent's game points : <b>{gameState.partnerPoints}</b>
+                        Opponent's game points : <b>{partnerPoints}</b>
                     </p>
                 </h4>
             )}
@@ -120,8 +118,8 @@ function Game() {
                     overflow: "auto",
                 }}
             >
-                {challenges.map((challenge, i) => (
-                    <ChallengeRow challenge={challenge} key={i} onAnswer={onAnswer} />
+                {challenges.map((challenge) => (
+                    <ChallengeRow challenge={challenge} key={challenge.id} onAnswer={onAnswer} />
                 ))}
             </div>
         </div>

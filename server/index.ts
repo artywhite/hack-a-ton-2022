@@ -38,12 +38,16 @@ export function init() {
             console.error(e);
         }
     });
+
+    console.log(`[SERVER]: Listening on ${socketPort} port`);
 }
 
 (() => {
     try {
         init();
-    } catch {}
+    } catch (error) {
+        console.log(`[SERVER]: Error on init`, error);
+    }
 })();
 
 const parseAuthPayload = (url: string) => {
