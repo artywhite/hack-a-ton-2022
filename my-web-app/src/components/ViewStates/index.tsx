@@ -53,7 +53,7 @@ function ViewStateManager() {
 
             const onConnected = () => {
                 setWsConnected(true);
-                setViewState(ViewStates.TOP_UP_PLAYING_WALLET);
+                setViewState((state) => (state === ViewStates.LOADING ? ViewStates.TOP_UP_PLAYING_WALLET : state));
             };
             const onDisconnected = () => setWsConnected(false);
 

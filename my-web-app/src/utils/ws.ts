@@ -92,10 +92,10 @@ class MyWebSocket {
     }
 
     send(eventName: string, payload: any) {
-        console.log("send message");
-
         try {
-            this.socket?.send(JSON.stringify({ eventName, payload }));
+            if (this.socket?.readyState === 1) {
+                this.socket?.send(JSON.stringify({ eventName, payload }));
+            }
         } catch (e) {
             console.error(e);
         }

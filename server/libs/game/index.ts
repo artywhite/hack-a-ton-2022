@@ -75,7 +75,21 @@ export class Game {
                 };
             }
 
-            player.send({ eventName: APP_EVENTS.GAME_STATE_UPDATE, payload: this.gameState });
+            this.playerOne.send({
+                eventName: APP_EVENTS.GAME_STATE_UPDATE,
+                payload: {
+                    ...this.gameState,
+                    currentPlayer: 1,
+                },
+            });
+
+            this.playerTwo.send({
+                eventName: APP_EVENTS.GAME_STATE_UPDATE,
+                payload: {
+                    ...this.gameState,
+                    currentPlayer: 2,
+                },
+            });
         }
 
         this.startChallenge(player);

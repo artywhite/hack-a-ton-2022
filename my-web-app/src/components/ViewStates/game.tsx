@@ -22,7 +22,19 @@ export interface IChallengeEndResult {
     isRight: boolean;
 }
 
+interface IGameState {
+    playerOnePoint: number;
+    playerTwoPoint: number;
+    currentPlayer: 1 | 2;
+}
+
+interface IGameResult {
+    myPoints: number;
+    partnerPoints: number;
+}
+
 function Game() {
+    const [gameState, setGameState] = useState<IGameResult>();
     const [challenges, setChallenges] = useState<IChallengePayload[]>([]);
 
     useEffect(() => {
@@ -43,12 +55,24 @@ function Game() {
             );
         };
 
+        const onGameStateUpdate = (payload: IGameState) => {
+            const myPoints = payload.currentPlayer === 1 ? payload.playerOnePoint : payload.playerTwoPoint;
+            const partnerPoints = payload.currentPlayer === 1 ? payload.playerTwoPoint : payload.playerOnePoint;
+
+            setGameState({
+                myPoints,
+                partnerPoints,
+            });
+        };
+
         MyWebSocket.subscribe(APP_EVENTS.CHALLENGE_START, onChallengeStart);
         MyWebSocket.subscribe(APP_EVENTS.CHALLENGE_END, onChallengeEnd);
+        MyWebSocket.subscribe(APP_EVENTS.GAME_STATE_UPDATE, onGameStateUpdate);
 
         return () => {
             MyWebSocket.unsubscribe(APP_EVENTS.CHALLENGE_START, onChallengeStart);
             MyWebSocket.unsubscribe(APP_EVENTS.CHALLENGE_END, onChallengeEnd);
+            MyWebSocket.unsubscribe(APP_EVENTS.GAME_STATE_UPDATE, onGameStateUpdate);
         };
     }, []);
 
@@ -61,6 +85,18 @@ function Game() {
     return (
         <div>
             <h1>game started!</h1>
+
+            {gameState && (
+                <h4>
+                    GAME RESULT:
+                    <p>
+                        My game points: <b>{gameState.myPoints}</b>
+                    </p>
+                    <p>
+                        Opponent's game points : <b>{gameState.partnerPoints}</b>
+                    </p>
+                </h4>
+            )}
 
             <div
                 style={{
