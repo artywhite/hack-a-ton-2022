@@ -6,7 +6,7 @@ import { Game } from "../game";
 export class App {
     private static instance: App;
 
-    private readonly clients: Set<BrowserClient> = new Set();
+    private readonly clients: BrowserClient[] = [];
     private readonly games: Game[] = [];
 
     public static getInstance(): App {
@@ -18,27 +18,32 @@ export class App {
     }
 
     public addClient(client: BrowserClient) {
-        this.clients.add(client);
+        this.clients.push(client);
+    }
+
+    public newClient(walletAddress: string) {
+        let client = this.clients.find((client) => client.walletId === walletAddress);
+
+        if (!client) {
+            client = new BrowserClient(walletAddress);
+
+            this.addClient(client);
+        }
+
+        this.debugPrint();
+
+        return client;
     }
 
     public removeClient(client: BrowserClient) {
-        this.clients.delete(client);
+        client.remove();
     }
 
-    public activate(walletId: string, client: BrowserClient) {
-        const isThisWalletAlreadyActive = this.getClients().some(
-            (_client) => _client !== client && _client.walletId === walletId,
-        );
+    public activate(client: BrowserClient) {
+        client.activate();
+        this.updateState();
 
-        if (!isThisWalletAlreadyActive) {
-            client.activate(walletId);
-
-            this.updateState();
-
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     private newGame(playerOne: BrowserClient, playerTwo: BrowserClient) {
@@ -96,7 +101,7 @@ export class App {
     }
 
     private getClients() {
-        return [...this.clients];
+        return this.clients;
     }
 
     private debugPrint(label?: string, clients?: BrowserClient[]) {

@@ -43,12 +43,14 @@ function Game() {
         };
 
         const onChallengeEnd = (payload: IChallengeEndResult) => {
+            const isPlayerAnswerCorrect = payload.isRight;
+
             setChallenges((current) =>
                 current.map((challenge) =>
                     challenge.id === payload.id
                         ? {
                               ...challenge,
-                              type: payload.isRight ? ChallengeType.Right : ChallengeType.Wrong,
+                              type: isPlayerAnswerCorrect ? ChallengeType.Right : ChallengeType.Wrong,
                           }
                         : challenge,
                 ),

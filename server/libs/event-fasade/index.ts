@@ -38,7 +38,7 @@ function waitingForPlayer(client: BrowserClient, message: IMessage) {
     const walletId = message.payload?.walletAddress as string;
 
     if (walletId) {
-        app.activate(walletId, client);
+        app.activate(client);
     }
 }
 

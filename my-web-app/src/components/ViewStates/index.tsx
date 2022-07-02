@@ -49,6 +49,7 @@ function ViewStateManager() {
 
     useEffect(() => {
         if (wallet?.walletAddress) {
+            MyWebSocket.init(wallet?.walletAddress);
             MyWebSocket.connect();
 
             const onConnected = () => {

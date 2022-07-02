@@ -5,23 +5,33 @@ import { Game } from "../game";
 import { ClientState } from "./types";
 
 export class BrowserClient {
-    public walletId?: string;
+    private connections: Set<WebSocket.WebSocket> = new Set();
 
     private game?: Game;
     private state: ClientState = ClientState.Frozen;
 
     private activeChallenge?: Challenge;
 
-    public constructor(private readonly ws: WebSocket.WebSocket, private readonly id: string) {
+    public constructor(public readonly walletId?: string) {
         //
     }
 
     public send(message: string | IMessage) {
-        try {
-            this.ws.send(typeof message === "string" ? message : JSON.stringify(message));
-        } catch {
-            //
+        for (const connection of this.connections) {
+            try {
+                connection.send(typeof message === "string" ? message : JSON.stringify(message));
+            } catch {
+                //
+            }
         }
+    }
+
+    public addConnection(ws: WebSocket.WebSocket) {
+        this.connections.add(ws);
+    }
+
+    public removeConnection(ws: WebSocket.WebSocket) {
+        this.connections.delete(ws);
     }
 
     /**
@@ -31,24 +41,15 @@ export class BrowserClient {
         return this.state !== ClientState.Frozen;
     }
 
-    public getId() {
-        return this.id;
-    }
+    public activate() {
+        if ([ClientState.Frozen, ClientState.Pending].includes(this.state)) {
+            this.state = ClientState.Pending;
 
-    public activate(walletId: string) {
-        if (this.state !== ClientState.Frozen) {
-            console.error("This client cannot be activated");
-
-            return;
+            this.send({
+                eventName: APP_EVENTS.CLIENT_APROVED,
+                payload: {},
+            });
         }
-
-        this.state = ClientState.Pending;
-        this.walletId = walletId;
-
-        this.send({
-            eventName: APP_EVENTS.CLIENT_APROVED,
-            payload: {},
-        });
     }
 
     public getGame() {
@@ -74,6 +75,8 @@ export class BrowserClient {
     }
 
     public setChallenge(activeChallenge: Challenge) {
+        this.state = ClientState.InGame;
+
         this.activeChallenge = activeChallenge;
 
         this.send({
@@ -98,5 +101,9 @@ export class BrowserClient {
 
             return result;
         }
+    }
+
+    public remove() {
+        this.state = ClientState.Removed;
     }
 }

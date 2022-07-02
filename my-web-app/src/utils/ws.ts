@@ -13,6 +13,8 @@ const RECONNECT_TIMEOUT = 10000;
 class MyWebSocket {
     private socket?: WebSocket;
 
+    private walletAddress?: string;
+
     subscriptions: ISubscription[] = [];
     private reconnectTimeout?: number;
 
@@ -23,8 +25,12 @@ class MyWebSocket {
         this.connect();
     }
 
+    public init(walletAddress: string) {
+        this.walletAddress = walletAddress;
+    }
+
     public connect() {
-        this.socket = new WebSocket("ws://localhost:9000");
+        this.socket = new WebSocket(`ws://localhost:9000?walletAddress=${this.walletAddress || ""}`);
 
         this.socket.addEventListener("open", () => {
             console.log("ws open");
