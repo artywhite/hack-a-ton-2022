@@ -31,10 +31,16 @@ export enum ClientState {
 
 interface IClientStateSync {
     state: ClientState;
-    challenges: {
+    challenges: Array<{
         id: string;
         exampleString: string;
         asnwers?: number[];
+        isActive?: boolean;
+    }>;
+    game?: {
+        currentPlayer: 1 | 2;
+        playerOnePoint: number;
+        playerTwoPoint: number;
     };
 }
 

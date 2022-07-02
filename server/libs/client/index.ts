@@ -62,6 +62,7 @@ export class BrowserClient {
                     ...challenge,
                     isActive: challenge === this.activeChallenge,
                 })),
+                game: this.game?.getStateByPlayer(this),
             },
         });
     }

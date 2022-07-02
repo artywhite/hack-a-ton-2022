@@ -59,6 +59,13 @@ export class Game {
         player.setChallenge(new Challenge());
     }
 
+    public getStateByPlayer(player: BrowserClient) {
+        return {
+            ...this.gameState,
+            currentPlayer: player === this.playerOne ? 1 : 2,
+        };
+    }
+
     public sendState() {
         this.playerOne.send({
             eventName: APP_EVENTS.GAME_STATE_UPDATE,
