@@ -76,6 +76,16 @@ export class App {
         this.debugPrint("setPlayerReady");
     }
 
+    public setPlayerAnswer(client: BrowserClient, asnwer: number) {
+        const game = client.getGame();
+
+        if (game) {
+            game.playerAnswer(client, asnwer);
+        }
+
+        this.debugPrint("setPlayerAnswer");
+    }
+
     // send a message from the current player to his partner
     public clientMessageProccess(client: BrowserClient, message: IMessage) {
         const game = client.getGame();

@@ -16,8 +16,6 @@ class MyWebSocket {
     subscriptions: ISubscription[] = [];
     private reconnectTimeout?: number;
 
-    constructor() {}
-
     reconnect() {
         this.socket?.close();
 
@@ -96,11 +94,11 @@ class MyWebSocket {
     send(eventName: string, payload: any) {
         console.log("send message");
 
-        this.socket?.send(JSON.stringify({ eventName, payload }));
-        // this.isReady.then(() => {
-        //     console.log("sending ws event", { eventName, payload });
-        //
-        // });
+        try {
+            this.socket?.send(JSON.stringify({ eventName, payload }));
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     destroy() {

@@ -81,4 +81,22 @@ export class BrowserClient {
             payload: this.activeChallenge.toMessage(),
         });
     }
+
+    public challengeEnd(answer: number) {
+        if (this.activeChallenge) {
+            const result = this.activeChallenge.check(answer);
+
+            this.send({
+                eventName: APP_EVENTS.CHALLENGE_END,
+                payload: {
+                    id: this.activeChallenge.getId(),
+                    isRight: result,
+                },
+            });
+
+            this.activeChallenge = undefined;
+
+            return result;
+        }
+    }
 }

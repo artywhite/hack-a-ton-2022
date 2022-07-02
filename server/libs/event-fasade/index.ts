@@ -11,6 +11,7 @@ type IEventFasade = {
 const EventFasade: IEventFasade = {
     [APP_EVENTS.WAITING_FOR_PLAYER]: waitingForPlayer,
     [APP_EVENTS.PLAYER_READY]: playerReady,
+    [APP_EVENTS.PLAYER_INPUT]: playerAnswer,
 };
 
 export function processEvent(client: BrowserClient, message: IMessage) {
@@ -25,6 +26,12 @@ export function processEvent(client: BrowserClient, message: IMessage) {
 
 function playerReady(client: BrowserClient) {
     app.setPlayerReady(client);
+}
+
+function playerAnswer(client: BrowserClient, message: IMessage) {
+    const answer = message.payload?.value as number;
+
+    app.setPlayerAnswer(client, answer);
 }
 
 function waitingForPlayer(client: BrowserClient, message: IMessage) {

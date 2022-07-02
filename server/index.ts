@@ -3,6 +3,7 @@ import { App } from "./libs/app";
 import { BrowserClient } from "./libs/client";
 import { processEvent } from "./libs/event-fasade";
 import { MessageParser } from "./libs/message-parser";
+import { getId } from "./utils/helpers";
 
 const socketPort = 9000;
 
@@ -44,10 +45,3 @@ export function init() {
         init();
     } catch {}
 })();
-
-function getId() {
-    return Math.random()
-        .toString(36)
-        .replace(/[^a-z]+/g, "")
-        .substring(0, 10);
-}

@@ -58,4 +58,26 @@ export class Game {
     public startChallenge(player: BrowserClient) {
         player.setChallenge(new Challenge());
     }
+
+    public playerAnswer(player: BrowserClient, asnwer: number) {
+        const result = player.challengeEnd(asnwer);
+
+        if (result) {
+            if (player === this.playerOne) {
+                this.gameState = {
+                    ...this.gameState,
+                    playerOnePoint: this.gameState.playerOnePoint + 1,
+                };
+            } else {
+                this.gameState = {
+                    ...this.gameState,
+                    playerTwoPoint: this.gameState.playerTwoPoint + 1,
+                };
+            }
+
+            player.send({ eventName: APP_EVENTS.GAME_STATE_UPDATE, payload: this.gameState });
+        }
+
+        this.startChallenge(player);
+    }
 }

@@ -76,6 +76,7 @@ function ViewStateManager() {
                 publicKey: TonWebUtils.bytesToHex(wallet.keyPair.publicKey),
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [balance, isWsConnected]);
 
     switch (viewState) {
