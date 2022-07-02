@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react';
 import { WalletV3ContractR2 } from 'tonweb/dist/types/contract/wallet/v3/wallet-v3-contract-r2';
-import { getBalance, getWallet } from '../ton/helpers/wallet';
+import { getBalance, getWallet } from '../ton/wallet';
 
 const WalletContext = React.createContext({});
 

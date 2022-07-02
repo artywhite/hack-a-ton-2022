@@ -1,5 +1,5 @@
 import { useWallet } from "../react-contexts/wallet-context";
-import { TonWebUtils } from "../ton/helpers/common";
+import { TonWebUtils } from "../ton/common";
 
 function Header() {
     const { wallet, balance } = useWallet();
@@ -12,7 +12,7 @@ function Header() {
                     Address: {addressShort}
                 </div>
                 <div className="wallet-balance">
-                    Balance: {balance ? TonWebUtils.fromNano(balance) : ''} TON
+                    Balance: {balance ? TonWebUtils.fromNano(balance) : ''} 💎
                 </div>
             </div>
         </header>
