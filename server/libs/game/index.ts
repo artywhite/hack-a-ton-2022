@@ -99,7 +99,8 @@ export class Game {
     }
 
     public startChallenge(player: BrowserClient) {
-        player.setChallenge(new Challenge());
+        const challengesCount = player.getChallenges().length;
+        player.setChallenge(new Challenge(challengesCount));
     }
 
     public getStateByPlayer(player: BrowserClient) {

@@ -1,3 +1,4 @@
+import { generateChallenge } from "../../utils/challenge-generation";
 import { getId } from "../../utils/helpers";
 
 export enum ChallengeType {
@@ -14,22 +15,11 @@ export class Challenge {
     private answers: number[] = [];
     private type: ChallengeType = ChallengeType.InProgress;
 
-    public constructor() {
-        const operandA = getRandomNumber();
-        const operandB = getRandomNumber();
-
-        this.rightAnswer = operandA + operandB;
-        this.exampleString = `${operandA} + ${operandB}`;
-
-        const rightIndex = getRandomNumber(3);
-
-        for (let i = 0; i < 4; i++) {
-            if (rightIndex === i) {
-                this.answers.push(this.rightAnswer);
-            } else {
-                this.answers.push(getRandomNumber(200));
-            }
-        }
+    public constructor(challengesCount: number) {
+        const [exampleString, rightAnswer, possibleAnswers] = generateChallenge(challengesCount);
+        this.rightAnswer = rightAnswer;
+        this.exampleString = exampleString;
+        this.answers = possibleAnswers;
     }
 
     public check(value: number) {

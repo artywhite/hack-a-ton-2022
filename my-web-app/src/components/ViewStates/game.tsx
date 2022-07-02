@@ -102,7 +102,6 @@ function Game(props: IGameProps) {
 
             {gameState && (
                 <h4>
-                    GAME RESULT:
                     <p>
                         My game points: <b>{myPoints}</b>
                     </p>

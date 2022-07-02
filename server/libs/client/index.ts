@@ -71,6 +71,10 @@ export class BrowserClient {
         return this.game;
     }
 
+    public getChallenges() {
+        return this.challenges;
+    }
+
     public setReadyToRoundPrepare(game: Game) {
         this.game = game;
         this.state = ClientState.WaitingGame;
