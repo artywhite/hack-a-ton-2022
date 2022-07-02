@@ -41,6 +41,17 @@ export class App {
         return false;
     }
 
+    private getClients() {
+        return [...this.clients];
+    }
+
+    private debugPrint(label?: string, clients?: BrowserClient[]) {
+        console.log(
+            label,
+            (clients || this.getClients()).map((client) => ({ state: client.getState(), wallet: client.walletId })),
+        );
+    }
+
     private newGame(playerOne: BrowserClient, playerTwo: BrowserClient) {
         const game = new Game(playerOne, playerTwo);
         this.games.push(game);
@@ -62,20 +73,6 @@ export class App {
         this.debugPrint("updateState");
     }
 
-    public setPlayerReady(client: BrowserClient) {
-        const game = client.getGame();
-
-        if (game) {
-            client.setReadyToGame();
-
-            if (game.isReady()) {
-                game.start();
-            }
-        }
-
-        this.debugPrint("setPlayerReady");
-    }
-
     // send a message from the current player to his partner
     public clientMessageProccess(client: BrowserClient, message: IMessage) {
         const game = client.getGame();
@@ -83,18 +80,5 @@ export class App {
         if (game) {
             game.getPartner(client)?.send(message);
         }
-    }
-
-    private getClients() {
-        return [...this.clients];
-    }
-
-    private debugPrint(label?: string, clients?: BrowserClient[]) {
-        console.log(
-            label,
-            (clients || this.getClients()).map((client) => ({ state: client.getState(), wallet: client.walletId })),
-        );
-
-        console.log("Games", this.games);
     }
 }

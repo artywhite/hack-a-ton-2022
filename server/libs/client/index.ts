@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 import { APP_EVENTS, IMessage } from "../../../my-web-app/src/types";
+import { Challenge } from "../challenge";
 import { Game } from "../game";
 import { ClientState } from "./types";
 
@@ -8,6 +9,8 @@ export class BrowserClient {
 
     private game?: Game;
     private state: ClientState = ClientState.Frozen;
+
+    private activeChallenge?: Challenge;
 
     public constructor(private readonly ws: WebSocket.WebSocket, private readonly id: string) {
         //
@@ -48,9 +51,13 @@ export class BrowserClient {
         });
     }
 
-    public setReadyToGame(game: Game) {
+    public getGame() {
+        return this.game;
+    }
+
+    public setReadyToRoundPrepare(game: Game) {
         this.game = game;
-        this.state === ClientState.WaitingGame;
+        this.state = ClientState.WaitingGame;
 
         this.send({
             eventName: APP_EVENTS.ROUND_PREPARE,
@@ -58,7 +65,20 @@ export class BrowserClient {
         });
     }
 
+    public setReadyToGame() {
+        this.state = ClientState.ReadyToGame;
+    }
+
     public getState() {
         return this.state;
+    }
+
+    public setChallenge(activeChallenge: Challenge) {
+        this.activeChallenge = activeChallenge;
+
+        this.send({
+            eventName: APP_EVENTS.CHALLENGE_START,
+            payload: this.activeChallenge.toMessage(),
+        });
     }
 }

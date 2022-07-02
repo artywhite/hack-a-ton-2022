@@ -67,7 +67,7 @@ class MyWebSocket {
         this.socket?.close();
     }
 
-    subscribe(eventName: string, callback: () => void) {
+    subscribe(eventName: string, callback: (payload?: any) => void) {
         const newSubscription = { eventName, callback };
         this.subscriptions.push(newSubscription);
 
@@ -77,7 +77,7 @@ class MyWebSocket {
         };
     }
 
-    unsubscribe(eventName: string, callback: () => void) {
+    unsubscribe(eventName: string, callback: (payload?: any) => void) {
         this.subscriptions = this.subscriptions.filter((s) => s.callback !== callback);
     }
 

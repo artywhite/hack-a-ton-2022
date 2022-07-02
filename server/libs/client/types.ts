@@ -5,6 +5,8 @@ export enum ClientState {
     Pending = "Pending",
     // Waiting to start game
     WaitingGame = "WaitingGame",
+    // ReadyToGame
+    ReadyToGame = "ReadyToGame",
 
     InGame = "InGame",
 }

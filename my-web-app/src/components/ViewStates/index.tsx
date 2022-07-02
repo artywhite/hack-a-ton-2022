@@ -3,6 +3,7 @@ import { useWallet } from "../../react-contexts/wallet-context";
 import { TonWebUtils } from "../../ton/common";
 import { APP_EVENTS } from "../../types";
 import MyWebSocket, { SubscriptionType } from "../../utils/ws";
+import Game from "./game";
 import "./index.css";
 
 import TopUpPlayingWallet from "./topUpPlayingWallet";
@@ -12,6 +13,7 @@ enum ViewStates {
     LOADING,
     TOP_UP_PLAYING_WALLET,
     WAITING_FOR_PLAYER,
+    GAME,
 }
 
 function ViewStateManager() {
@@ -23,10 +25,22 @@ function ViewStateManager() {
 
     useEffect(() => {
         const onRoundPrepare = () => {
-            console.log("ROUND PREPARE");
+            console.log("ROUND_PREPARE");
+
+            // Тут пока опускаем все что касается payemnt chanel и соответвующих проверок
+            setTimeout(() => {
+                MyWebSocket.send(APP_EVENTS.PLAYER_READY, {});
+            }, Math.floor(Math.random() * 3000) + 500);
+        };
+
+        const onRoundStart = () => {
+            console.log("ROUND_START");
+
+            setViewState(ViewStates.GAME);
         };
 
         MyWebSocket.subscribe(APP_EVENTS.ROUND_PREPARE, onRoundPrepare);
+        MyWebSocket.subscribe(APP_EVENTS.ROUND_START, onRoundStart);
 
         return () => {
             MyWebSocket.unsubscribeAll();
@@ -77,6 +91,11 @@ function ViewStateManager() {
 
         case ViewStates.WAITING_FOR_PLAYER: {
             ViewStateComponent = <WaitingForPlayer />;
+            break;
+        }
+
+        case ViewStates.GAME: {
+            ViewStateComponent = <Game />;
             break;
         }
     }

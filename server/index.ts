@@ -1,7 +1,7 @@
 import WebSocket from "ws";
-import { APP_EVENTS } from "../my-web-app/src/types";
 import { App } from "./libs/app";
 import { BrowserClient } from "./libs/client";
+import { processEvent } from "./libs/event-fasade";
 import { MessageParser } from "./libs/message-parser";
 
 const socketPort = 9000;
@@ -29,13 +29,9 @@ export function init() {
                 const parser = new MessageParser(receiveData.toString());
                 const message = parser.parse();
 
-                if (message.eventName === APP_EVENTS.WAITING_FOR_PLAYER) {
-                    const walletId = message.payload?.walletAddress as string;
+                console.log("message recived", client.getId(), message);
 
-                    if (walletId) {
-                        app.activate(walletId, client);
-                    }
-                }
+                processEvent(client, message);
             });
         } catch (e) {
             console.error(e);
