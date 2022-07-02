@@ -1,0 +1,75 @@
+import { APP_EVENTS } from "../../../my-web-app/src/types";
+import { BrowserClient } from "../client";
+import { ClientState } from "../client/types";
+import { Game } from "../game";
+
+export class App {
+    private static instance: App;
+
+    private readonly clients: Set<BrowserClient> = new Set();
+    private readonly games: Game[] = [];
+
+    public static getInstance(): App {
+        if (!App.instance) {
+            App.instance = new App();
+        }
+
+        return App.instance;
+    }
+
+    public addClient(client: BrowserClient) {
+        this.clients.add(client);
+    }
+
+    public removeClient(client: BrowserClient) {
+        this.clients.delete(client);
+    }
+
+    public activate(walletId: string, client: BrowserClient) {
+        const isThisWalletAlreadyActive = this.getClients().some(
+            (_client) => _client !== client && _client.walletId === walletId,
+        );
+
+        if (!isThisWalletAlreadyActive) {
+            client.activate(walletId);
+
+            this.updateState();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private getClients() {
+        return [...this.clients];
+    }
+
+    private debugPrint(label?: string, clients?: BrowserClient[]) {
+        console.log(
+            label,
+            (clients || this.getClients()).map((client) => ({ state: client.getState(), wallet: client.walletId })),
+        );
+    }
+
+    private newGame(playerOne: BrowserClient, playerTwo: BrowserClient) {
+        const game = new Game(playerOne, playerTwo);
+        this.games.push(game);
+
+        playerOne.setReadyToGame(game);
+        playerTwo.setReadyToGame(game);
+    }
+
+    public updateState() {
+        // find pair ready to game
+        const pendingClients = this.getClients().filter((client) => client.getState() === ClientState.Pending);
+
+        if (pendingClients.length >= 2) {
+            this.newGame(pendingClients[0], pendingClients[1]);
+
+            this.debugPrint("readyFirst", pendingClients);
+        }
+
+        this.debugPrint("updateState");
+    }
+}

@@ -1,36 +1,54 @@
+export enum SubscriptionType {
+    CONNECT = "CONNECT",
+    DISCONNECT = "DISCONNECT",
+}
+
 interface ISubscription {
-    eventName: string;
+    eventName: SubscriptionType | string;
     callback: (payload: any) => void;
 }
 
+const RECONNECT_TIMEOUT = 10000;
+
 class MyWebSocket {
-    socket: WebSocket;
-    isReady: Promise<boolean>;
+    private socket?: WebSocket;
+
     subscriptions: ISubscription[] = [];
+    private reconnectTimeout?: number;
 
-    constructor() {
-        this.socket = new WebSocket("ws://localhost:3000/ws");
+    constructor() {}
 
-        let isReadyResolve: (result: boolean) => void;
-        let isReadyReject: (error: any) => void;
+    reconnect() {
+        this.socket?.close();
 
-        this.isReady = new Promise((resolve, reject) => {
-            isReadyResolve = resolve;
-            isReadyReject = reject;
-        })
+        window.clearTimeout(this.reconnectTimeout);
+        this.connect();
+    }
 
-        this.socket.onopen = function (event) {
-            isReadyResolve(true);
-        }
-        this.socket.onerror = function (error) {
-            isReadyReject(error);
-        }
-        this.socket.onclose = function (error) {
-            // TODO: reconnect?
-            // browser refresh?
-        }
-        this.socket.onmessage = (event) => {
-            console.log('ws on message', { event })
+    public connect() {
+        this.socket = new WebSocket("ws://localhost:9000");
+
+        this.socket.addEventListener("open", () => {
+            console.log("ws open");
+
+            this.trigger(SubscriptionType.CONNECT, true);
+        });
+
+        this.socket.addEventListener("error", (error) => {
+            this.socket?.close();
+        });
+
+        this.socket.addEventListener("close", (error) => {
+            this.trigger(SubscriptionType.DISCONNECT, true);
+            window.clearTimeout(this.reconnectTimeout);
+
+            this.reconnectTimeout = window.setTimeout(() => {
+                this.connect();
+            }, RECONNECT_TIMEOUT);
+        });
+
+        this.socket.addEventListener("message", (event) => {
+            console.log("ws on message", { event });
             try {
                 const { eventName, payload } = JSON.parse(event.data);
 
@@ -38,11 +56,15 @@ class MyWebSocket {
                     if (s.eventName === eventName) {
                         s.callback(payload);
                     }
-                })
+                });
             } catch (error) {
-                console.error(error)
+                console.error(error);
             }
-        };
+        });
+    }
+
+    public close() {
+        this.socket?.close();
     }
 
     subscribe(eventName: string, callback: () => void) {
@@ -51,28 +73,38 @@ class MyWebSocket {
 
         // unsubscribe
         return () => {
-            this.subscriptions = this.subscriptions.filter(s => s !== newSubscription);
-        }
+            this.subscriptions = this.subscriptions.filter((s) => s !== newSubscription);
+        };
     }
 
     unsubscribe(eventName: string, callback: () => void) {
-        this.subscriptions = this.subscriptions.filter(s => s.callback !== callback);
+        this.subscriptions = this.subscriptions.filter((s) => s.callback !== callback);
     }
 
     unsubscribeAll() {
         this.subscriptions = [];
     }
 
+    private trigger(eventName: string, payload: any) {
+        for (const s of this.subscriptions) {
+            if (s.eventName === eventName) {
+                s.callback(payload);
+            }
+        }
+    }
+
     send(eventName: string, payload: any) {
-        console.log('send init');
-        this.isReady.then(() => {
-            console.log('sending ws event', { eventName, payload })
-            this.socket.send(JSON.stringify({ eventName, payload }));
-        })
+        console.log("send message");
+
+        this.socket?.send(JSON.stringify({ eventName, payload }));
+        // this.isReady.then(() => {
+        //     console.log("sending ws event", { eventName, payload });
+        //
+        // });
     }
 
     destroy() {
-        this.socket.close(1000, "Ooops :)");
+        this.socket?.close(1000, "Ooops :)");
     }
 }
 

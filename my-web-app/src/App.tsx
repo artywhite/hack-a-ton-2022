@@ -1,7 +1,7 @@
-import './App.css';
-import Header from './components/Header';
-import ViewStateManager from './components/ViewStates/index';
-import { WalletProvider } from './react-contexts/wallet-context';
+import "./App.css";
+import Header from "./components/Header";
+import ViewStateManager from "./components/ViewStates/index";
+import { WalletProvider } from "./react-contexts/wallet-context";
 
 function App() {
     return (
