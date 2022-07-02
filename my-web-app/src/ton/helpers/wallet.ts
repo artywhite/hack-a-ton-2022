@@ -1,14 +1,8 @@
 import TonWebType from "tonweb/dist/types/index";
-import { getTonweb } from "./common";
+import { getTonweb, TonWebUtils } from "./common";
 const TonWeb = require("tonweb/dist/tonweb");
 
-// for some reason TonWebType doesn't have all of the types declared :(
-type TonWebUtilsType = TonWebType["utils"] & {
-    keyPairFromSeed: (seed: Uint8Array) => nacl.SignKeyPair;
-    newSeed: () => Uint8Array;
-}
 
-const TonWebUtils: TonWebUtilsType = TonWeb.utils;
 const TonWebWallet: TonWebType["wallet"] = TonWeb.Wallets;
 
 function getPlayingWalletKeyPair() {

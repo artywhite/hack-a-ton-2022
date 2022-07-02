@@ -1,6 +1,14 @@
 import TonWeb from "tonweb/dist/tonweb";
 import TonWebType from "tonweb/dist/types/index";
 
+// for some reason TonWebType doesn't have all of the types declared :(
+type TonWebUtilsType = TonWebType["utils"] & {
+    keyPairFromSeed: (seed: Uint8Array) => nacl.SignKeyPair;
+    newSeed: () => Uint8Array;
+}
+
+export const TonWebUtils: TonWebUtilsType = TonWeb.utils;
+
 let tonweb: TonWebType;
 
 export function getTonweb(): TonWebType {
