@@ -18,6 +18,7 @@ export function init() {
 
             const client = app.newClient(walletAddress);
             client.addConnection(ws);
+            client.sendState();
 
             ws.on("close", () => {
                 console.log("[SERVER]: Client disconnected.");

@@ -9,6 +9,4 @@ export enum ClientState {
     ReadyToGame = "ReadyToGame",
 
     InGame = "InGame",
-
-    Removed = "Removed",
 }

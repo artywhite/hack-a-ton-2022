@@ -10,6 +10,7 @@ export class BrowserClient {
     private game?: Game;
     private state: ClientState = ClientState.Frozen;
 
+    private challenges: Challenge[] = [];
     private activeChallenge?: Challenge;
 
     public constructor(public readonly walletId?: string) {
@@ -57,6 +58,10 @@ export class BrowserClient {
             eventName: APP_EVENTS.STATE_SYNC,
             payload: {
                 status: this.state,
+                challenges: this.challenges.map((challenge) => ({
+                    ...challenge,
+                    isActive: challenge === this.activeChallenge,
+                })),
             },
         });
     }
@@ -86,6 +91,7 @@ export class BrowserClient {
     public setChallenge(activeChallenge: Challenge) {
         this.state = ClientState.InGame;
 
+        this.challenges.push(activeChallenge);
         this.activeChallenge = activeChallenge;
 
         this.send({
@@ -110,9 +116,5 @@ export class BrowserClient {
 
             return result;
         }
-    }
-
-    public remove() {
-        this.state = ClientState.Removed;
     }
 }

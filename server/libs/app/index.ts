@@ -35,10 +35,6 @@ export class App {
         return client;
     }
 
-    public removeClient(client: BrowserClient) {
-        client.remove();
-    }
-
     public activate(client: BrowserClient) {
         client.activate();
         this.updateState();

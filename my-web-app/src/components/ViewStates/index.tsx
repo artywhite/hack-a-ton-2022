@@ -16,6 +16,28 @@ enum ViewStates {
     GAME,
 }
 
+export enum ClientState {
+    // Client connected, but not activated
+    Frozen = "Frozen",
+    // Activated and ready to game
+    Pending = "Pending",
+    // Waiting to start game
+    WaitingGame = "WaitingGame",
+
+    ReadyToGame = "ReadyToGame",
+
+    InGame = "InGame",
+}
+
+interface IClientStateSync {
+    state: ClientState;
+    challenges: {
+        id: string;
+        exampleString: string;
+        asnwers?: number[];
+    };
+}
+
 function ViewStateManager() {
     const { balance, wallet } = useWallet();
     const [viewState, setViewState] = useState(ViewStates.LOADING);
@@ -39,6 +61,13 @@ function ViewStateManager() {
             setViewState(ViewStates.GAME);
         };
 
+        const stateSync = (payload: IClientStateSync) => {
+            console.log("STATE_SYNC", payload);
+
+            // Тут надо обработать восстановление состояния
+        };
+
+        MyWebSocket.subscribe(APP_EVENTS.STATE_SYNC, stateSync);
         MyWebSocket.subscribe(APP_EVENTS.ROUND_PREPARE, onRoundPrepare);
         MyWebSocket.subscribe(APP_EVENTS.ROUND_START, onRoundStart);
 
@@ -64,6 +93,7 @@ function ViewStateManager() {
             return () => {
                 MyWebSocket.unsubscribe(SubscriptionType.CONNECT, onConnected);
                 MyWebSocket.unsubscribe(SubscriptionType.DISCONNECT, onDisconnected);
+                MyWebSocket.unsubscribe(APP_EVENTS.STATE_SYNC, onConnected);
             };
         }
     }, [wallet?.walletAddress]);
