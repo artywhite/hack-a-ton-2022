@@ -30,7 +30,7 @@ class MyWebSocket {
     }
 
     public connect() {
-        this.socket = new WebSocket(`ws://localhost:9000?walletAddress=${this.walletAddress || ""}`);
+        this.socket = new WebSocket(`ws://157.230.30.211:9000?walletAddress=${this.walletAddress || ""}`);
 
         this.socket.addEventListener("open", () => {
             console.log("ws open");

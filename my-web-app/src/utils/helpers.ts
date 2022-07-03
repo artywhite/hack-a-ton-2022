@@ -2,9 +2,12 @@ export function inject<T = unknown>(array: T[], injectable: T, injection: Partia
     return array?.map((item) =>
         item === injectable
             ? {
-                  ...item,
-                  ...injection,
-              }
+                ...item,
+                ...injection,
+            }
             : item,
     );
 }
+
+
+export const waitTime = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

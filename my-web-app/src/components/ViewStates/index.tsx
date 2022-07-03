@@ -3,6 +3,7 @@ import { useWallet } from "../../react-contexts/wallet-context";
 import { TonWebUtils } from "../../ton/common";
 import { getPaymentChannel } from "../../ton/payment-channel";
 import { APP_EVENTS } from "../../types";
+import { waitTime } from "../../utils/helpers";
 import MyWebSocket, { SubscriptionType } from "../../utils/ws";
 import Game, { IChallengePayload, IGameState } from "./game";
 import GameOver from "./game-over";
@@ -134,6 +135,8 @@ function ViewStateManager() {
             if (state === ClientState.WaitingGame) {
                 if (!isPlayerOne) {
                     MyWebSocket.send(APP_EVENTS.CHANNEL_CREATED, { paymentChannelAddress });
+                } else {
+                    MyWebSocket.send(APP_EVENTS.A_SYNCED, { paymentChannelAddress });
                 }
             }
         };
@@ -147,20 +150,31 @@ function ViewStateManager() {
                 throw new Error("Channels addresses are not same");
             }
 
-            MyWebSocket.send(APP_EVENTS.CHANNEL_VERIFIED, {});
-
             // @ts-ignore
             const fromMyWallet = paymentChannel.fromWallet({
                 wallet: wallet.wallet,
                 secretKey: wallet.keyPair.secretKey,
             });
 
+            let channelState;
+
+            try {
+                // @ts-ignore
+                channelState = await paymentChannel.getChannelState();
+            } catch (error) {
+                console.log(error);
+                await fromMyWallet.deploy().send(TonWebUtils.toNano("0.05"));
+                await waitTime(5000);
+            }
+
+            MyWebSocket.send(APP_EVENTS.CHANNEL_VERIFIED, {});
+
             // @ts-ignore
             const { balanceA, balanceB } = await paymentChannel.getData();
             console.log({ balanceB: balanceB.toString(), balanceA: balanceA.toString() });
 
             // @ts-ignore
-            const channelState = await paymentChannel.getChannelState();
+            // const channelState = await paymentChannel.getChannelState();
             console.log({ channelState });
 
             // TOP UP A and init
@@ -228,12 +242,20 @@ function ViewStateManager() {
             setGameOverState(payload);
         };
 
+        const onASynced = async () => {
+            const isA = gameState?.currentPlayer === 1;
+            if (!isA) {
+                MyWebSocket.send(APP_EVENTS.CHANNEL_CREATED, { paymentChannelAddress: myPaymentChannelAddress });
+            }
+        }
+
         MyWebSocket.subscribe(APP_EVENTS.ROUND_END, onGameEnd);
         MyWebSocket.subscribe(APP_EVENTS.STATE_SYNC, onStateSync);
         MyWebSocket.subscribe(APP_EVENTS.ROUND_PREPARE, onRoundPrepare);
         MyWebSocket.subscribe(APP_EVENTS.ROUND_START, onRoundStart);
         MyWebSocket.subscribe(APP_EVENTS.CHANNEL_CREATED, onChannelCreated);
         MyWebSocket.subscribe(APP_EVENTS.CHANNEL_VERIFIED, onChannelVerified);
+        MyWebSocket.subscribe(APP_EVENTS.A_SYNCED, onASynced);
 
         return () => {
             MyWebSocket.unsubscribeAll();
