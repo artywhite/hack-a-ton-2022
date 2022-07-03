@@ -66,10 +66,7 @@ export class Game {
             clearInterval(this.timer);
 
             this.status = GameState.Ended;
-            this.sendToAllPlayer({
-                eventName: APP_EVENTS.ROUND_END,
-                payload: {},
-            });
+            this.sendState(APP_EVENTS.ROUND_END);
         }
     }
 
@@ -124,9 +121,9 @@ export class Game {
         };
     }
 
-    public sendState() {
+    public sendState(event = APP_EVENTS.GAME_STATE_UPDATE) {
         this.playerOne.send({
-            eventName: APP_EVENTS.GAME_STATE_UPDATE,
+            eventName: event,
             payload: {
                 ...this.gameState,
                 currentPlayer: 1,
@@ -134,7 +131,7 @@ export class Game {
         });
 
         this.playerTwo.send({
-            eventName: APP_EVENTS.GAME_STATE_UPDATE,
+            eventName: event,
             payload: {
                 ...this.gameState,
                 currentPlayer: 2,
