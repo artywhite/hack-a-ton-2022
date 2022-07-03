@@ -5,6 +5,7 @@ import { getPaymentChannel } from "../../ton/payment-channel";
 import { APP_EVENTS } from "../../types";
 import MyWebSocket, { SubscriptionType } from "../../utils/ws";
 import Game, { IChallengePayload, IGameState } from "./game";
+import GameOver from "./game-over";
 import "./index.css";
 
 import TopUpPlayingWallet from "./topUpPlayingWallet";
@@ -15,6 +16,7 @@ enum ViewStates {
     TOP_UP_PLAYING_WALLET,
     WAITING_FOR_PLAYER,
     GAME,
+    GAME_OVER,
 }
 
 export enum ClientState {
@@ -40,7 +42,7 @@ interface RoundPreparePayload {
     playersCredentials: {
         playerOne: ClientCredentials;
         playerTwo: ClientCredentials;
-    }
+    };
 }
 
 interface IClientStateSync {
@@ -52,7 +54,7 @@ interface IClientStateSync {
         isActive?: boolean;
     }>;
     game?: {
-        gameId: string,
+        gameId: string;
         currentPlayer: 1 | 2;
         playerOnePoint: number;
         playerTwoPoint: number;
@@ -67,24 +69,27 @@ function ViewStateManager() {
     const { balance, wallet } = useWallet();
     const [viewState, setViewState] = useState(ViewStates.LOADING);
     const [gameState, setGameState] = useState<IGameState>();
+    const [gameOverState, setGameOverState] = useState<IGameState>();
     const [challenges, setChallenges] = useState<IChallengePayload[]>([]);
     const [isWsConnected, setWsConnected] = useState(false);
     const [paymentChannel, setPaymentChannel] = useState();
-    const [myPaymentChannelAddress, setMyPaymentChannelAddress] = useState('');
+    const [myPaymentChannelAddress, setMyPaymentChannelAddress] = useState("");
 
     let ViewStateComponent: ReactNode = <></>;
 
     useEffect(() => {
         const onRoundPrepare = (payload: RoundPreparePayload) => {
             console.log("ROUND_PREPARE", payload);
-            const { playersCredentials: { playerOne, playerTwo } } = payload;
+            const {
+                playersCredentials: { playerOne, playerTwo },
+            } = payload;
             const isPlayerOne = playerOne.walletAddress === wallet.walletAddress;
 
             getPaymentChannel({
                 myKeyPair: wallet.keyPair,
                 publicKeyA: playerOne.publicKey,
                 publicKeyB: playerTwo.publicKey,
-                isA: isPlayerOne
+                isA: isPlayerOne,
             }).then(async (paymentChannel) => {
                 setPaymentChannel(paymentChannel);
 
@@ -103,16 +108,21 @@ function ViewStateManager() {
 
         const onStateSync = async (payload: IClientStateSync) => {
             console.log("STATE_SYNC", payload);
-            const { state, game, challenges = [], playersCredentials: { playerOne, playerTwo } } = payload;
+            const {
+                state,
+                game,
+                challenges = [],
+                playersCredentials: { playerOne, playerTwo },
+            } = payload;
             const isPlayerOne = playerOne.walletAddress === wallet.walletAddress;
             const paymentChannel = await getPaymentChannel({
                 myKeyPair: wallet.keyPair,
                 publicKeyA: playerOne.publicKey,
                 publicKeyB: playerTwo.publicKey,
-                isA: isPlayerOne
+                isA: isPlayerOne,
             });
             setPaymentChannel(paymentChannel);
-            const paymentChannelAddress = (await (await paymentChannel.getAddress()).toString(true, true, true));
+            const paymentChannelAddress = await (await paymentChannel.getAddress()).toString(true, true, true);
             setMyPaymentChannelAddress(paymentChannelAddress);
 
             if (state === ClientState.InGame) {
@@ -134,7 +144,7 @@ function ViewStateManager() {
             const isChannelAddressSame = paymentChannelAddress === myPaymentChannelAddress;
 
             if (!isChannelAddressSame) {
-                throw new Error('Channels addresses are not same');
+                throw new Error("Channels addresses are not same");
             }
 
             MyWebSocket.send(APP_EVENTS.CHANNEL_VERIFIED, {});
@@ -142,7 +152,7 @@ function ViewStateManager() {
             // @ts-ignore
             const fromMyWallet = paymentChannel.fromWallet({
                 wallet: wallet.wallet,
-                secretKey: wallet.keyPair.secretKey
+                secretKey: wallet.keyPair.secretKey,
             });
 
             // @ts-ignore
@@ -155,13 +165,13 @@ function ViewStateManager() {
 
             // TOP UP A and init
             if (channelState === 0) {
-                await fromMyWallet.deploy().send(TonWebUtils.toNano('0.05'));
+                await fromMyWallet.deploy().send(TonWebUtils.toNano("0.05"));
 
-                if (balanceA.toString() === '0') {
-                    const initBalance = TonWebUtils.toNano('0.1');
+                if (balanceA.toString() === "0") {
+                    const initBalance = TonWebUtils.toNano("0.1");
                     await fromMyWallet
                         .topUp({ coinsA: initBalance, coinsB: new TonWebUtils.BN(0) })
-                        .send(initBalance.add(TonWebUtils.toNano('0.05'))); // +0.05 TON to network fees
+                        .send(initBalance.add(TonWebUtils.toNano("0.05"))); // +0.05 TON to network fees
                 }
 
                 const channelInitState = {
@@ -171,18 +181,18 @@ function ViewStateManager() {
                     seqnoB: new TonWebUtils.BN(0), // initially 0
                 };
 
-                await fromMyWallet.init(channelInitState).send(TonWebUtils.toNano('0.05'));
+                await fromMyWallet.init(channelInitState).send(TonWebUtils.toNano("0.05"));
             }
 
             // A says: I'm READY!
             if (channelState === 1) {
                 MyWebSocket.send(APP_EVENTS.PLAYER_READY, {});
             }
-        }
+        };
 
         // will listen only B
         const onChannelVerified = async () => {
-            console.log('onChannelVerified');
+            console.log("onChannelVerified");
             // top up wallet b
 
             // @ts-ignore
@@ -193,17 +203,17 @@ function ViewStateManager() {
                 // @ts-ignore
                 const fromMyWallet = paymentChannel.fromWallet({
                     wallet: wallet.wallet,
-                    secretKey: wallet.keyPair.secretKey
+                    secretKey: wallet.keyPair.secretKey,
                 });
 
                 // @ts-ignore
                 const { balanceA, balanceB } = await paymentChannel.getData();
                 console.log({ balanceB: balanceB.toString(), balanceA: balanceA.toString() });
-                if (balanceB.toString() === '0') {
-                    const initBalance = TonWebUtils.toNano('0.1');
+                if (balanceB.toString() === "0") {
+                    const initBalance = TonWebUtils.toNano("0.1");
                     await fromMyWallet
                         .topUp({ coinsA: new TonWebUtils.BN(0), coinsB: initBalance })
-                        .send(initBalance.add(TonWebUtils.toNano('0.05'))); // +0.05 TON to network fees
+                        .send(initBalance.add(TonWebUtils.toNano("0.05"))); // +0.05 TON to network fees
                 }
             }
 
@@ -211,8 +221,14 @@ function ViewStateManager() {
                 // B says: I'm READY!
                 MyWebSocket.send(APP_EVENTS.PLAYER_READY, {});
             }
-        }
+        };
 
+        const onGameEnd = async (payload: IGameState) => {
+            setViewState(ViewStates.GAME_OVER);
+            setGameOverState(payload);
+        };
+
+        MyWebSocket.subscribe(APP_EVENTS.ROUND_END, onGameEnd);
         MyWebSocket.subscribe(APP_EVENTS.STATE_SYNC, onStateSync);
         MyWebSocket.subscribe(APP_EVENTS.ROUND_PREPARE, onRoundPrepare);
         MyWebSocket.subscribe(APP_EVENTS.ROUND_START, onRoundStart);
@@ -275,6 +291,11 @@ function ViewStateManager() {
 
         case ViewStates.GAME: {
             ViewStateComponent = <Game game={gameState} challenges={challenges} paymentChannel={paymentChannel} />;
+            break;
+        }
+
+        case ViewStates.GAME_OVER: {
+            ViewStateComponent = <GameOver state={gameOverState} />;
             break;
         }
     }
