@@ -8,12 +8,14 @@ interface WalletProviderProps {
     children: ReactNode;
 };
 
+export interface IWalletWrapper {
+    wallet: WalletV3ContractR2;
+    keyPair: nacl.SignKeyPair;
+    walletAddress: string;
+}
+
 interface IWalletContext {
-    wallet: {
-        wallet: WalletV3ContractR2;
-        keyPair: nacl.SignKeyPair;
-        walletAddress: string;
-    },
+    wallet: IWalletWrapper,
     balance: string;
     refetch: () => void;
 }

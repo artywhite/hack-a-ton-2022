@@ -1,6 +1,6 @@
 import { APP_EVENTS, IMessage } from "../../../my-web-app/src/types";
 import { BrowserClient } from "../client";
-import { ClientState } from "../client/types";
+import { ClientCredentials, ClientState } from "../client/types";
 import { Game } from "../game";
 
 export class App {
@@ -35,7 +35,8 @@ export class App {
         return client;
     }
 
-    public activate(client: BrowserClient) {
+    public activate(client: BrowserClient, clientCredentials: ClientCredentials) {
+        client.setCredentials(clientCredentials);
         client.activate();
         this.updateState();
 

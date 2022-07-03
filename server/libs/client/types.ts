@@ -10,3 +10,8 @@ export enum ClientState {
 
     InGame = "InGame",
 }
+
+export interface ClientCredentials {
+    walletAddress: string;
+    publicKey: string; // hex format
+}

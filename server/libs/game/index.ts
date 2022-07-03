@@ -1,4 +1,5 @@
 import { APP_EVENTS, IMessage } from "../../../my-web-app/src/types";
+import { getId } from "../../utils/helpers";
 import { Challenge } from "../challenge";
 import { BrowserClient } from "../client";
 import { ClientState } from "../client/types";
@@ -12,6 +13,7 @@ interface IGameStatePoint {
 const ROUND_LENGTH = 60 * 1000;
 
 export class Game {
+    private readonly id: string = getId();
     private status: GameState = GameState.WaitingStart;
 
     private timer?: NodeJS.Timeout;
@@ -34,6 +36,17 @@ export class Game {
         }
 
         return null;
+    }
+
+    public getId() {
+        return this.id;
+    }
+
+    public getPlayersCredentials() {
+        return {
+            playerOne: this.playerOne.getCredentials(),
+            playerTwo: this.playerTwo.getCredentials(),
+        };
     }
 
     public isReady() {
@@ -106,6 +119,7 @@ export class Game {
     public getStateByPlayer(player: BrowserClient) {
         return {
             ...this.gameState,
+            gameId: this.id,
             currentPlayer: player === this.playerOne ? 1 : 2,
         };
     }

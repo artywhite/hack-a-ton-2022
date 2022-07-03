@@ -2,19 +2,28 @@ import WebSocket from "ws";
 import { APP_EVENTS, IMessage } from "../../../my-web-app/src/types";
 import { Challenge } from "../challenge";
 import { Game } from "../game";
-import { ClientState } from "./types";
+import { ClientCredentials, ClientState } from "./types";
 
 export class BrowserClient {
     private connections: Set<WebSocket.WebSocket> = new Set();
 
     private game?: Game;
     private state: ClientState = ClientState.Frozen;
+    private credentials?: ClientCredentials;
 
     private challenges: Challenge[] = [];
     private activeChallenge?: Challenge;
 
     public constructor(public readonly walletId?: string) {
         //
+    }
+
+    public setCredentials(credentials: ClientCredentials) {
+        this.credentials = credentials;
+    }
+
+    public getCredentials(): ClientCredentials | undefined {
+        return this.credentials;
     }
 
     public send(message: string | IMessage) {
@@ -63,6 +72,7 @@ export class BrowserClient {
                     isActive: challenge === this.activeChallenge,
                 })),
                 game: this.game?.getStateByPlayer(this),
+                playersCredentials: this.game?.getPlayersCredentials()
             },
         });
     }
@@ -81,7 +91,10 @@ export class BrowserClient {
 
         this.send({
             eventName: APP_EVENTS.ROUND_PREPARE,
-            payload: {},
+            payload: {
+                gameId: game.getId(),
+                playersCredentials: this.game.getPlayersCredentials(),
+            },
         });
     }
 

@@ -35,10 +35,11 @@ function playerAnswer(client: BrowserClient, message: IMessage) {
 }
 
 function waitingForPlayer(client: BrowserClient, message: IMessage) {
-    const walletId = message.payload?.walletAddress as string;
+    const { walletAddress, publicKey } = message.payload || {};
+    const clientCredentials = { walletAddress, publicKey };
 
-    if (walletId) {
-        app.activate(client);
+    if (walletAddress) {
+        app.activate(client, clientCredentials);
     }
 }
 

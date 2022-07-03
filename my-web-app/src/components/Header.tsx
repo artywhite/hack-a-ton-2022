@@ -3,7 +3,8 @@ import { TonWebUtils } from "../ton/common";
 
 function Header() {
     const { wallet, balance } = useWallet();
-    const addressShort = wallet.walletAddress ? wallet.walletAddress.slice(0, 6) + '...' + wallet.walletAddress.slice(-6) : '';
+    // const addressShort = wallet.walletAddress ? wallet.walletAddress.slice(0, 6) + '...' + wallet.walletAddress.slice(-6) : '';
+    const addressShort = wallet.walletAddress;
 
     return (
         <header className="app-header">

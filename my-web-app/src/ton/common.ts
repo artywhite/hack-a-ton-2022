@@ -1,17 +1,22 @@
 import TonWeb from "tonweb/dist/tonweb";
 import TonWebType from "tonweb/dist/types/index";
 
-// for some reason TonWebType doesn't have all of the types declared :(
+// for some reason TonWeb doesn't have all of the types declared
 type TonWebUtilsType = TonWebType["utils"] & {
     keyPairFromSeed: (seed: Uint8Array) => nacl.SignKeyPair;
     newSeed: () => Uint8Array;
 }
+type TonWebTypePatched = TonWebType & {
+    payments: {
+        createChannel: (...args: any[]) => any,
+    }
+}
 
 export const TonWebUtils: TonWebUtilsType = TonWeb.utils;
 
-let tonweb: TonWebType;
+let tonweb: TonWebTypePatched;
 
-export function getTonweb(): TonWebType {
+export function getTonweb(): TonWebTypePatched {
     if (tonweb) {
         return tonweb;
     }
